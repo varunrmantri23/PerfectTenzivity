@@ -19,175 +19,7 @@
         },
       };
     </script>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-      body {
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-          Roboto, sans-serif;
-      }
-
-      .step {
-        display: none;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.4s ease;
-      }
-
-      .step.active {
-        display: block !important;
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-      }
-
-      .glass-card {
-        background: rgba(21, 35, 43, 0.85);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .input-field {
-        background: rgba(236, 232, 225, 0.95) !important;
-        color: #15232b !important;
-        border: 1px solid rgba(255, 70, 85, 0.3) !important;
-        transition: all 0.3s ease;
-      }
-
-      .input-field:focus {
-        outline: none !important;
-        border-color: #ff4655 !important;
-        box-shadow: 0 0 0 3px rgba(255, 70, 85, 0.1) !important;
-        background: rgba(236, 232, 225, 1) !important;
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #ff4655, #e63946);
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 70, 85, 0.2);
-      }
-
-      .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 70, 85, 0.3);
-      }
-
-      .btn-secondary {
-        background: rgba(236, 232, 225, 0.1);
-        border: 1px solid rgba(236, 232, 225, 0.2);
-        transition: all 0.3s ease;
-      }
-
-      .btn-secondary:hover {
-        background: rgba(236, 232, 225, 0.15);
-        border-color: rgba(236, 232, 225, 0.3);
-      }
-
-      .sensitivity-display {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 70, 85, 0.1),
-          rgba(255, 70, 85, 0.05)
-        );
-        border: 1px solid rgba(255, 70, 85, 0.2);
-      }
-
-      .binary-search-visual {
-        height: 100px;
-        position: relative;
-        margin: 20px 0;
-      }
-
-      .search-range {
-        position: absolute;
-        top: 20px;
-        height: 8px;
-        background: rgba(236, 232, 225, 0.2);
-        border-radius: 4px;
-        width: 100%;
-      }
-
-      .search-bounds {
-        position: absolute;
-        top: 20px;
-        height: 8px;
-        background: linear-gradient(90deg, #ff4655, #e63946);
-        border-radius: 4px;
-        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .search-pointer {
-        position: absolute;
-        top: 12px;
-        width: 4px;
-        height: 24px;
-        background: #ff4655;
-        border-radius: 2px;
-        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 0 10px rgba(255, 70, 85, 0.5);
-      }
-
-      .search-labels {
-        position: absolute;
-        top: 45px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: rgba(236, 232, 225, 0.6);
-      }
-
-      .search-current {
-        position: absolute;
-        top: 65px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 16px;
-        font-weight: 600;
-        color: #ff4655;
-      }
-
-      .pulse {
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
-        }
-      }
-
-      .fade-in {
-        animation: fadeIn 0.5s ease-in;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .progress-bar-container {
-        background: rgba(236, 232, 225, 0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        height: 8px;
-      }
-
-      .progress-bar {
-        background: linear-gradient(90deg, #ff4655, #e63946);
-        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        height: 100%;
-      }
-    </style>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body class="bg-darkTeal text-cream min-h-screen">
     <!-- Video Background -->
@@ -519,7 +351,9 @@
 
       <!-- Tips Card -->
       <div class="glass-card rounded-2xl p-6 text-center">
-        <h3 class="text-lg font-medium text-cream mb-4">💡 Pro Tips</h3>
+        <h3 class="text-lg font-medium text-cream mb-4">
+          💡 Pro Tips --From a plastic player
+        </h3>
         <div class="grid md:grid-cols-3 gap-4 text-sm text-cream/80">
           <div>
             <div class="text-valorantRed font-medium mb-1">Consistency</div>
@@ -536,365 +370,110 @@
         </div>
       </div>
     </main>
+    <!-- Footer -->
+    <footer class="bg-darkTeal/80 text-cream py-3 mt-12">
+      <div class="container mx-auto flex justify-center space-x-8">
+        <!-- GitHub Star -->
+        <a
+          href="https://github.com/varunrmantri23/PerfectTenzivity"
+          target="_blank"
+          class="flex items-center gap-2 hover:text-valorantRed transition"
+        >
+          <!-- star icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.955a1 1 0 00.95.69h4.162c.969 
+                 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 
+                 1.118l1.286 3.955c.3.921-.755 1.688-1.54 
+                 1.118l-3.37-2.455a1 1 0 00-1.176 0l-3.37 
+                 2.455c-.785.57-1.84-.197-1.54-1.118l1.286-3.955a1 
+                 1 0 00-.364-1.118L2.064 9.383c-.783-.57-.38-1.81.588-1.81h4.162a1 
+                 1 0 00.95-.69l1.286-3.955z"
+            />
+          </svg>
+          <span>Star on GitHub</span>
+        </a>
 
-    <script>
-      // App State
-      let currentStep = 1;
-      let currentDPI = 800;
-      let currentSens = 0.35;
-      let lowBound = 0.1;
-      let highBound = 1.0;
-      let iteration = 0;
-      let maxIterations = 7;
+        <!-- LinkedIn -->
+        <a
+          href="https://linkedin.com/in/varun-mantri"
+          target="_blank"
+          class="flex items-center gap-2 hover:text-valorantRed transition"
+        >
+          <!-- LinkedIn icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            x="0px"
+            y="0px"
+            width="20"
+            height="20"
+            viewBox="0,0,256,256"
+            style="fill: #ffffff"
+          >
+            <g
+              fill="#ffffff"
+              fill-rule="nonzero"
+              stroke="none"
+              stroke-width="1"
+              stroke-linecap="butt"
+              stroke-linejoin="miter"
+              stroke-miterlimit="10"
+              stroke-dasharray=""
+              stroke-dashoffset="0"
+              font-family="none"
+              font-weight="none"
+              font-size="none"
+              text-anchor="none"
+              style="mix-blend-mode: normal"
+            >
+              <g transform="scale(5.12,5.12)">
+                <path
+                  d="M41,4h-32c-2.76,0 -5,2.24 -5,5v32c0,2.76 2.24,5 5,5h32c2.76,0 5,-2.24 5,-5v-32c0,-2.76 -2.24,-5 -5,-5zM17,20v19h-6v-19zM11,14.47c0,-1.4 1.2,-2.47 3,-2.47c1.8,0 2.93,1.07 3,2.47c0,1.4 -1.12,2.53 -3,2.53c-1.8,0 -3,-1.13 -3,-2.53zM39,39h-6c0,0 0,-9.26 0,-10c0,-2 -1,-4 -3.5,-4.04h-0.08c-2.42,0 -3.42,2.06 -3.42,4.04c0,0.91 0,10 0,10h-6v-19h6v2.56c0,0 1.93,-2.56 5.81,-2.56c3.97,0 7.19,2.73 7.19,8.26z"
+                ></path>
+              </g>
+            </g>
+          </svg>
+          <span>LinkedIn</span>
+        </a>
 
-      // Initialize app
-      document.addEventListener("DOMContentLoaded", function () {
-        loadDPIHistory();
-        initializeEventListeners();
-        updateProgress();
-      });
+        <!-- Instagram -->
+        <a
+          href="https://instagram.com/varun_m_"
+          target="_blank"
+          class="flex items-center gap-2 hover:text-valorantRed transition"
+        >
+          <!-- Instagram icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M7.75 2h8.5A5.75 5.75 0 0122 
+                 7.75v8.5A5.75 5.75 0 0116.25 
+                 22h-8.5A5.75 5.75 0 012 
+                 16.25v-8.5A5.75 5.75 0 017.75 
+                 2zm0 1.5A4.25 4.25 0 003.5 
+                 7.75v8.5A4.25 4.25 0 007.75 
+                 20.5h8.5A4.25 4.25 0 0020.5 
+                 16.25v-8.5A4.25 4.25 0 0016.25 
+                 3.5h-8.5zM12 7a5 5 0 110 10 
+                 5 5 0 010-10zm0 1.5a3.5 3.5 0 100 
+                 7 3.5 3.5 0 000-7zm5.25-.75a1 
+                 1 0 110 2 1 1 0 010-2z"
+            />
+          </svg>
+          <span>Instagram</span>
+        </a>
+      </div>
+    </footer>
 
-      function initializeEventListeners() {
-        // Step 1 - DPI Input
-        document
-          .getElementById("calculate-btn")
-          .addEventListener("click", calculateBaseSensitivity);
-        document.getElementById("dpi").addEventListener("input", function () {
-          currentDPI = parseInt(this.value) || 800;
-        });
-
-        // Step 2 - Initial Test
-        document
-          .getElementById("too-slow")
-          .addEventListener("click", () => initialFeedback("slow"));
-        document
-          .getElementById("perfect")
-          .addEventListener("click", () => initialFeedback("perfect"));
-        document
-          .getElementById("too-fast")
-          .addEventListener("click", () => initialFeedback("fast"));
-
-        // Step 3 - Binary Search
-        document
-          .getElementById("binary-too-slow")
-          .addEventListener("click", () => binaryFeedback("slow"));
-        document
-          .getElementById("binary-perfect")
-          .addEventListener("click", () => binaryFeedback("perfect"));
-        document
-          .getElementById("binary-too-fast")
-          .addEventListener("click", () => binaryFeedback("fast"));
-
-        // Step 4 - Final
-        document
-          .getElementById("copy-sens")
-          .addEventListener("click", copySensitivity);
-        document
-          .getElementById("start-over")
-          .addEventListener("click", startOver);
-      }
-
-      function calculateBaseSensitivity() {
-        currentDPI = parseInt(document.getElementById("dpi").value) || 800;
-
-        // Calculate base sensitivity (target eDPI of 280)
-        currentSens = Math.round((280 / currentDPI) * 1000) / 1000;
-
-        // Save DPI to history
-        saveDPIToHistory(currentDPI);
-
-        // Update display
-        updateSensitivityDisplay();
-
-        // Animate to next step
-        goToStep(2);
-        updateProgress();
-      }
-
-      function initialFeedback(feedback) {
-        if (feedback === "perfect") {
-          goToStep(4);
-          showFinalResult();
-          return;
-        } else {
-          // Setup binary search bounds
-          if (feedback === "slow") {
-            lowBound = currentSens;
-            highBound = Math.min(currentSens * 2, 1.0);
-          } else {
-            highBound = currentSens;
-            lowBound = Math.max(currentSens * 0.5, 0.1);
-          }
-
-          iteration = 1;
-          goToStep(3);
-          updateBinarySearch();
-        }
-        updateProgress();
-      }
-
-      function binaryFeedback(feedback) {
-        if (feedback === "perfect") {
-          goToStep(4);
-          showFinalResult();
-        } else {
-          if (feedback === "slow") {
-            lowBound = currentSens;
-          } else {
-            highBound = currentSens;
-          }
-
-          iteration++;
-
-          if (iteration >= maxIterations) {
-            goToStep(4);
-            showFinalResult();
-          } else {
-            updateBinarySearch();
-          }
-        }
-        updateProgress();
-      }
-
-      function updateBinarySearch() {
-        // Calculate new sensitivity (middle of bounds)
-        currentSens = Math.round(((lowBound + highBound) / 2) * 1000) / 1000;
-
-        // Update displays
-        document.getElementById("binary-sens").textContent = currentSens;
-        document.getElementById("iteration-count").textContent = iteration;
-        document.getElementById("max-iterations").textContent = maxIterations;
-
-        // Update binary search visualization
-        updateBinarySearchVisualization();
-
-        // Animate the sensitivity change
-        animateSensitivityChange();
-      }
-
-      function updateBinarySearchVisualization() {
-        const searchBounds = document.getElementById("search-bounds");
-        const searchPointer = document.getElementById("search-pointer");
-        const lowLabel = document.getElementById("low-label");
-        const highLabel = document.getElementById("high-label");
-        const currentValue = document.getElementById("search-current-value");
-
-        // Calculate percentages for visualization
-        const totalRange = 1.0 - 0.1; // 0.1 to 1.0
-        const boundStart = ((lowBound - 0.1) / totalRange) * 100;
-        const boundWidth = ((highBound - lowBound) / totalRange) * 100;
-        const pointerPos = ((currentSens - 0.1) / totalRange) * 100;
-
-        // Animate bounds
-        gsap.to(searchBounds, {
-          left: boundStart + "%",
-          width: boundWidth + "%",
-          duration: 0.8,
-          ease: "power2.out",
-        });
-
-        // Animate pointer
-        gsap.to(searchPointer, {
-          left: pointerPos + "%",
-          duration: 0.8,
-          ease: "power2.out",
-        });
-
-        // Update labels
-        lowLabel.textContent = lowBound.toFixed(2);
-        highLabel.textContent = highBound.toFixed(2);
-        currentValue.textContent = currentSens.toFixed(3);
-      }
-
-      function animateSensitivityChange() {
-        const sensElement = document.getElementById("binary-sens");
-
-        // Pulse animation
-        gsap.fromTo(
-          sensElement,
-          { scale: 1 },
-          {
-            scale: 1.1,
-            duration: 0.2,
-            yoyo: true,
-            repeat: 1,
-            ease: "power2.inOut",
-          }
-        );
-      }
-
-      function showFinalResult() {
-        const cm360 =
-          Math.round(((2.54 * 360) / (currentDPI * currentSens)) * 10) / 10;
-        const finalEDPI = Math.round(currentDPI * currentSens);
-
-        document.getElementById("final-sens").textContent = currentSens;
-        document.getElementById("final-dpi").textContent = currentDPI;
-        document.getElementById("final-edpi").textContent = finalEDPI;
-        document.getElementById("cm-360").textContent = cm360 + "cm";
-        document.getElementById("total-iterations").textContent = iteration;
-
-        // Celebration animation
-        celebrateResult();
-      }
-
-      function celebrateResult() {
-        const finalSens = document.getElementById("final-sens");
-
-        gsap.fromTo(
-          finalSens,
-          { scale: 0, rotation: -180 },
-          {
-            scale: 1,
-            rotation: 0,
-            duration: 0.8,
-            ease: "back.out(1.7)",
-          }
-        );
-      }
-
-      function updateSensitivityDisplay() {
-        document.getElementById("current-sens").textContent = currentSens;
-        document.getElementById("display-dpi").textContent = currentDPI;
-        document.getElementById("display-sens").textContent = currentSens;
-        document.getElementById("display-edpi").textContent = Math.round(
-          currentDPI * currentSens
-        );
-      }
-
-      function goToStep(step) {
-        currentStep = step;
-        document
-          .querySelectorAll(".step")
-          .forEach((el) => el.classList.remove("active"));
-        const el = document.getElementById(`step-${step}`);
-        el.classList.add("active");
-
-        // Progress bar
-        const pct = (currentStep / 4) * 100;
-        gsap.to("#progress-bar", {
-          width: pct + "%",
-          duration: 0.5,
-          ease: "power2.out",
-        });
-        document.getElementById(
-          "progress-text"
-        ).textContent = `Step ${step} of 4`;
-
-        // Animate step
-        gsap.from(el, { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" });
-      }
-
-      function updateProgress() {
-        const progressBar = document.getElementById("progress-bar");
-        const progressText = document.getElementById("progress-text");
-
-        const progressPercent = (currentStep / 4) * 100;
-
-        gsap.to(progressBar, {
-          width: progressPercent + "%",
-          duration: 0.6,
-          ease: "power2.out",
-        });
-
-        progressText.textContent = `Step ${currentStep} of 4`;
-      }
-
-      function copySensitivity() {
-        const textToCopy = `DPI: ${currentDPI}, Sensitivity: ${currentSens}, eDPI: ${Math.round(
-          currentDPI * currentSens
-        )}`;
-
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          const button = document.getElementById("copy-sens");
-          const originalText = button.textContent;
-          button.textContent = "✅ Copied!";
-          button.classList.add("pulse");
-
-          setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove("pulse");
-          }, 2000);
-        });
-      }
-
-      function startOver() {
-        currentStep = 1;
-        currentSens = 0.35;
-        lowBound = 0.1;
-        highBound = 1.0;
-        iteration = 0;
-
-        goToStep(1);
-        updateProgress();
-
-        // Reset DPI input
-        document.getElementById("dpi").value = currentDPI;
-      }
-
-      // DPI History Management (using variables instead of localStorage)
-      let dpiHistory = [];
-
-      function saveDPIToHistory(dpi) {
-        if (!dpiHistory.includes(dpi)) {
-          dpiHistory.unshift(dpi);
-          dpiHistory = dpiHistory.slice(0, 5); // Keep only 5 most recent
-          updateDPIHistory();
-        }
-      }
-
-      function loadDPIHistory() {
-        // Initialize with common values
-        dpiHistory = [800, 400, 1600];
-        updateDPIHistory();
-      }
-
-      function updateDPIHistory() {
-        const historyDiv = document.getElementById("dpi-history");
-        const buttonsDiv = document.getElementById("dpi-buttons");
-
-        if (dpiHistory.length > 0) {
-          historyDiv.classList.remove("hidden");
-          buttonsDiv.innerHTML = "";
-
-          dpiHistory.forEach((dpi) => {
-            const button = document.createElement("button");
-            button.className =
-              "text-xs px-3 py-1 bg-valorantRed/20 text-valorantRed rounded-full hover:bg-valorantRed/30 transition";
-            button.textContent = dpi;
-            button.onclick = () => {
-              document.getElementById("dpi").value = dpi;
-              currentDPI = dpi;
-            };
-            buttonsDiv.appendChild(button);
-          });
-        }
-      }
-
-      // Initial animations
-      gsap.from("header", {
-        y: -50,
-        opacity: 0,
-        duration: 1,
-        ease: "power3.out",
-      });
-
-      gsap.from(".glass-card", {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        delay: 0.3,
-        stagger: 0.2,
-        ease: "power2.out",
-      });
-
-      // Video fallback handler
-      const video = document.querySelector("video");
-      if (video) {
-        video.addEventListener("error", function () {
-          console.log("Local video failed, using fallback");
-        });
-      }
-    </script>
+    <script src="./script.js"></script>
   </body>
 </html>
