@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfect Sensitivity Finder | Valorant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cream: "#ece8e1",
+              darkTeal: "#15232B",
+              valorantRed: "#ff4655",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+      }
+
+      .step {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+      }
+
+      .step.active {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+
+      .glass-card {
+        background: rgba(21, 35, 43, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .input-field {
+        background: rgba(236, 232, 225, 0.95) !important;
+        color: #15232b !important;
+        border: 1px solid rgba(255, 70, 85, 0.3) !important;
+        transition: all 0.3s ease;
+      }
+
+      .input-field:focus {
+        outline: none !important;
+        border-color: #ff4655 !important;
+        box-shadow: 0 0 0 3px rgba(255, 70, 85, 0.1) !important;
+        background: rgba(236, 232, 225, 1) !important;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #ff4655, #e63946);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 70, 85, 0.2);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 70, 85, 0.3);
+      }
+
+      .btn-secondary {
+        background: rgba(236, 232, 225, 0.1);
+        border: 1px solid rgba(236, 232, 225, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(236, 232, 225, 0.15);
+        border-color: rgba(236, 232, 225, 0.3);
+      }
+
+      .sensitivity-display {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 70, 85, 0.1),
+          rgba(255, 70, 85, 0.05)
+        );
+        border: 1px solid rgba(255, 70, 85, 0.2);
+      }
+
+      .binary-search-visual {
+        height: 100px;
+        position: relative;
+        margin: 20px 0;
+      }
+
+      .search-range {
+        position: absolute;
+        top: 20px;
+        height: 8px;
+        background: rgba(236, 232, 225, 0.2);
+        border-radius: 4px;
+        width: 100%;
+      }
+
+      .search-bounds {
+        position: absolute;
+        top: 20px;
+        height: 8px;
+        background: linear-gradient(90deg, #ff4655, #e63946);
+        border-radius: 4px;
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .search-pointer {
+        position: absolute;
+        top: 12px;
+        width: 4px;
+        height: 24px;
+        background: #ff4655;
+        border-radius: 2px;
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 10px rgba(255, 70, 85, 0.5);
+      }
+
+      .search-labels {
+        position: absolute;
+        top: 45px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: rgba(236, 232, 225, 0.6);
+      }
+
+      .search-current {
+        position: absolute;
+        top: 65px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 16px;
+        font-weight: 600;
+        color: #ff4655;
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .progress-bar-container {
+        background: rgba(236, 232, 225, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        height: 8px;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #ff4655, #e63946);
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body class="bg-darkTeal text-cream min-h-screen">
+    <!-- Video Background -->
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        opacity: 0.2;
+        pointer-events: none;
+      "
+    >
+      <source src="intro.mp4" type="video/mp4" />
+      <!-- Remote fallback -->
+      <source src="https:/example.com/i.mp4" type="video/mp4" />
+    </video>
+    <!-- Animated Background -->
+    <div
+      class="fixed inset-0 bg-gradient-to-br from-darkTeal via-darkTeal to-slate-900"
+      style="z-index: -1"
+    ></div>
+
+    <!-- Header -->
+    <header class="relative z-10 py-8 px-4 text-center">
+      <div
+        class="flex flex-col md:flex-row justify-center items-center gap-6 mb-6"
+      >
+        <!-- Valorant Logo -->
+        <div class="flex items-center">
+          <svg
+            data-logo="logo"
+            class="w-60 h-30"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 346 48"
+          >
+            <g id="logogram" transform="translate(0, 3.5) rotate(0)">
+              <path
+                d="M22.6506 20.6999C22.6506 21.9272 21.6626 22.9221 20.4437 22.9221C19.2249 22.9221 18.2368 21.9272 18.2368 20.6999C18.2368 19.4726 19.2249 18.4777 20.4437 18.4777C21.6626 18.4777 22.6506 19.4726 22.6506 20.6999Z"
+                fill="white"
+              />
+              <path
+                d="M46.9265 20.6999C46.9265 21.9272 45.9384 22.9221 44.7196 22.9221C43.5007 22.9221 42.5127 21.9272 42.5127 20.6999C42.5127 19.4726 43.5007 18.4777 44.7196 18.4777C45.9384 18.4777 46.9265 19.4726 46.9265 20.6999Z"
+                fill="white"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M44.7196 0.699892C45.4655 0.699893 46.2019 0.7413 46.9265 0.821956V3.05966C46.2035 2.96888 45.467 2.92211 44.7196 2.92211C40.8154 2.92211 37.2092 4.19704 34.2861 6.35694C34.8176 6.87712 35.3203 7.427 35.7915 8.00391C38.3125 6.20336 41.3944 5.14434 44.7196 5.14434C45.4689 5.14434 46.2057 5.19805 46.9265 5.30186V7.5509C46.2088 7.42966 45.4715 7.36656 44.7196 7.36656C41.8807 7.36656 39.2524 8.26509 37.097 9.79594C37.4999 10.4185 37.8692 11.065 38.2025 11.7329C40.0284 10.3854 42.2824 9.58878 44.7196 9.58878C45.4754 9.58878 46.2134 9.66529 46.9265 9.81104V12.091C46.2211 11.9082 45.4816 11.811 44.7196 11.811C42.587 11.811 40.6326 12.5713 39.1064 13.8391C39.3876 14.6146 39.6226 15.4126 39.8078 16.2296C41.0193 14.8807 42.7712 14.0332 44.7196 14.0332C45.4934 14.0332 46.2362 14.1669 46.9265 14.4125V16.85C46.2773 16.4719 45.5235 16.2554 44.7196 16.2554C42.2819 16.2554 40.3058 18.2453 40.3058 20.6999C40.3058 23.1545 42.282 25.1443 44.7196 25.1443C47.1573 25.1443 49.1334 23.1545 49.1334 20.6999L49.1333 20.6767V1.19548C57.9785 3.2165 64.5817 11.1817 64.5817 20.6999C64.5817 31.7456 55.6891 40.6999 44.7196 40.6999C40.1486 40.6999 35.9382 39.145 32.5816 36.5319C29.2253 39.1446 25.0136 40.6999 20.4437 40.6999C19.6978 40.6999 18.9614 40.6585 18.2368 40.5778V38.3401C18.9598 38.4309 19.6963 38.4777 20.4437 38.4777C24.348 38.4777 27.9542 37.2027 30.8773 35.0428C30.3458 34.5226 29.8431 33.9728 29.3719 33.3959C26.8509 35.1965 23.7689 36.2554 20.4438 36.2554C19.6945 36.2554 18.9576 36.2017 18.2368 36.0979V33.8489C18.9545 33.9701 19.6918 34.0332 20.4438 34.0332C23.2828 34.0332 25.911 33.1347 28.0664 31.6039C27.6635 30.9813 27.2942 30.3348 26.9609 29.6669C25.135 31.0144 22.881 31.811 20.4438 31.811C19.688 31.811 18.9499 31.7345 18.2368 31.5887V29.3087C18.9422 29.4915 19.6817 29.5888 20.4438 29.5888C22.5764 29.5888 24.5308 28.8285 26.057 27.5607C25.7758 26.7851 25.5408 25.9872 25.3556 25.1701C24.1441 26.519 22.3922 27.3666 20.4438 27.3666C19.6699 27.3666 18.9271 27.2329 18.2368 26.9872V24.5497C18.886 24.9279 19.6398 25.1443 20.4438 25.1443C22.8814 25.1443 24.8576 23.1545 24.8576 20.6999C24.8576 18.2453 22.8814 16.2554 20.4438 16.2554C18.0061 16.2554 16.03 18.2453 16.03 20.6999L16.0299 40.2043C7.18474 38.1833 0.581665 30.2181 0.581665 20.6999C0.581665 9.65419 9.47426 0.69989 20.4438 0.69989C25.0148 0.69989 29.2251 2.25471 32.5817 4.86779C35.938 2.25522 40.1496 0.69989 44.7196 0.699892ZM51.3402 4.21437V6.64126C56.5595 9.13782 60.1679 14.4945 60.1679 20.6999C60.1679 29.291 53.2515 36.2554 44.7196 36.2554C36.1878 36.2554 29.2714 29.291 29.2714 20.6999C29.2714 15.7907 25.3191 11.811 20.4438 11.811C15.5684 11.811 11.6162 15.7907 11.6162 20.6999C11.6162 22.9542 12.4496 25.0125 13.8231 26.5795V20.6999C13.8231 17.018 16.7873 14.0332 20.4438 14.0332C24.1003 14.0332 27.0645 17.018 27.0645 20.6999C27.0645 30.5183 34.9689 38.4777 44.7196 38.4777C54.4703 38.4777 62.3747 30.5183 62.3747 20.6999C62.3747 13.2391 57.8105 6.85165 51.3402 4.21437ZM13.8231 29.5896L13.823 32.2494C9.86521 29.944 7.20241 25.6351 7.20241 20.6999C7.20241 13.3361 13.1308 7.36656 20.4438 7.36656C27.7568 7.36656 33.6851 13.3361 33.6851 20.6999C33.6851 26.8364 38.6254 31.811 44.7196 31.811C50.8138 31.811 55.7541 26.8364 55.7541 20.6999C55.7541 17.0648 54.0204 13.8373 51.3403 11.8102V9.15031C55.2982 11.4557 57.961 15.7647 57.961 20.6999C57.961 28.0637 52.0326 34.0332 44.7196 34.0332C37.4066 34.0332 31.4783 28.0637 31.4782 20.6999C31.4782 14.5634 26.5379 9.58878 20.4438 9.58878C14.3496 9.58878 9.40932 14.5634 9.40932 20.6999C9.40932 24.335 11.1429 27.5624 13.8231 29.5896ZM4.99551 20.6999C4.99551 26.9052 8.60387 32.2619 13.823 34.7585V37.1854C7.35281 34.5481 2.78862 28.1607 2.78862 20.6999C2.78862 10.8815 10.6931 2.92211 20.4438 2.92211C30.1944 2.92211 38.0989 10.8815 38.0989 20.6999C38.0989 24.3818 41.0631 27.3666 44.7196 27.3666C48.3761 27.3666 51.3403 24.3818 51.3403 20.6999L51.3403 14.8203C52.7138 16.3873 53.5472 18.4456 53.5472 20.6999C53.5472 25.6091 49.595 29.5888 44.7196 29.5888C39.8443 29.5888 35.892 25.6091 35.892 20.6999C35.892 12.1088 28.9756 5.14433 20.4438 5.14433C11.9119 5.14433 4.99551 12.1088 4.99551 20.6999Z"
+                fill="white"
+              />
+            </g>
+            <g id="logotype" transform="translate(71, 1)">
+              <path
+                fill="#ffffff"
+                d="M8.45 9.87L15.87 9.87Q18.60 9.87 20.82 10.92Q23.05 11.97 24.36 13.86Q25.67 15.75 25.67 18.27L25.67 18.27Q25.67 20.76 24.36 22.67Q23.05 24.57 20.82 25.64Q18.60 26.71 15.87 26.71L15.87 26.71L12.58 26.71L12.58 29.23Q12.58 31.19 12.67 33.15Q12.76 35.11 13.21 37L13.21 37L8.45 37Q8.91 35.11 8.99 33.15Q9.08 31.19 9.08 29.23L9.08 29.23L9.08 17.64Q9.08 15.68 8.99 13.72Q8.91 11.76 8.45 9.87L8.45 9.87ZM12.58 12.67L12.58 23.91L14.82 23.91Q18.39 23.91 20.14 22.44Q21.89 20.97 21.89 18.27L21.89 18.27Q21.89 15.58 20.14 14.13Q18.39 12.67 14.82 12.67L14.82 12.67L12.58 12.67ZM35.82 37.49L35.82 37.49Q33.86 37.49 32.13 36.72Q30.40 35.95 29.05 34.59Q27.70 33.22 26.95 31.38Q26.20 29.54 26.20 27.41L26.20 27.41Q26.20 25.27 26.95 23.42Q27.70 21.56 29.03 20.18Q30.36 18.80 32.09 18.03Q33.83 17.26 35.79 17.26L35.79 17.26Q38.41 17.26 40.20 18.61Q41.98 19.95 42.91 22.25Q43.84 24.54 43.84 27.41L43.84 27.41L29.63 27.41Q29.63 29.41 30.55 31.07Q31.48 32.73 33.07 33.71Q34.67 34.69 36.63 34.69L36.63 34.69Q38.59 34.69 39.86 33.99Q41.14 33.29 41.91 32.13L41.91 32.13L43.17 33.22Q42.79 33.99 41.93 34.99Q41.07 35.98 39.58 36.74Q38.10 37.49 35.82 37.49ZM29.91 24.78L29.91 24.78L40.20 24.78Q39.81 22.61 38.66 21.34Q37.50 20.06 35.44 20.06L35.44 20.06Q33.20 20.06 31.80 21.34Q30.40 22.61 29.91 24.78ZM58.43 22.02L58.22 22.02Q57.66 21.04 56.89 20.72Q56.12 20.41 55.11 20.41L55.11 20.41Q53.53 20.41 52.62 21.46Q51.71 22.51 51.29 24.24Q50.87 25.98 50.77 28.07L50.77 28.07L50.77 29.23Q50.77 31.19 50.85 33.15Q50.94 35.11 51.40 37L51.40 37L46.81 37Q47.27 35.11 47.35 33.15Q47.44 31.19 47.44 29.23L47.44 29.23L47.44 25.45Q47.44 23.56 47.30 22.35Q47.16 21.14 46.88 20.30Q46.60 19.46 46.11 18.69L46.11 18.69L46.11 18.48L50.77 17.50L50.77 21.39L51.01 21.39Q51.47 19.57 52.81 18.41Q54.16 17.26 56.16 17.26L56.16 17.26Q57.21 17.26 57.82 17.56Q58.43 17.85 58.43 17.85L58.43 17.85L58.43 22.02ZM71.42 17.75L71.77 20.55Q71.07 20.41 70.37 20.34Q69.67 20.27 68.69 20.22Q67.71 20.16 66.13 20.16L66.13 20.16L66.13 29.27Q66.13 32.13 66.27 33.85Q66.41 35.56 66.76 37L66.76 37L62.35 37Q62.70 35.56 62.84 33.85Q62.98 32.13 62.98 29.27L62.98 29.27L62.98 20.23Q61.97 20.27 61.25 20.34Q60.53 20.41 59.83 20.55L59.83 20.55L60.18 17.75L62.98 17.75Q62.98 16.35 63.05 14.91Q63.12 13.48 63.61 12.25Q64.10 11.03 65.31 10.28Q66.52 9.52 68.76 9.52L68.76 9.52Q70.30 9.52 71.29 9.89Q72.29 10.26 73.03 10.64L73.03 10.64L71.70 13.76L71.59 13.76Q71.56 13.69 71.26 13.36Q70.96 13.02 70.31 12.71Q69.67 12.39 68.55 12.39L68.55 12.39Q67.46 12.39 66.95 12.78Q66.45 13.16 66.29 13.88Q66.13 14.60 66.17 15.58Q66.20 16.56 66.13 17.75L66.13 17.75L71.42 17.75ZM82.47 37.49L82.47 37.49Q80.52 37.49 78.78 36.72Q77.05 35.95 75.70 34.59Q74.36 33.22 73.60 31.38Q72.85 29.54 72.85 27.41L72.85 27.41Q72.85 25.27 73.60 23.42Q74.36 21.56 75.69 20.18Q77.02 18.80 78.75 18.03Q80.48 17.26 82.44 17.26L82.44 17.26Q85.06 17.26 86.85 18.61Q88.63 19.95 89.56 22.25Q90.49 24.54 90.49 27.41L90.49 27.41L76.28 27.41Q76.28 29.41 77.21 31.07Q78.13 32.73 79.73 33.71Q81.32 34.69 83.28 34.69L83.28 34.69Q85.24 34.69 86.52 33.99Q87.80 33.29 88.56 32.13L88.56 32.13L89.83 33.22Q89.44 33.99 88.58 34.99Q87.72 35.98 86.24 36.74Q84.75 37.49 82.47 37.49ZM76.56 24.78L76.56 24.78L86.85 24.78Q86.47 22.61 85.31 21.34Q84.16 20.06 82.09 20.06L82.09 20.06Q79.85 20.06 78.45 21.34Q77.05 22.61 76.56 24.78ZM108.13 32.13L109.39 33.22Q109.00 33.99 108.15 34.99Q107.29 35.98 105.80 36.74Q104.31 37.49 102.04 37.49L102.04 37.49Q100.08 37.49 98.35 36.72Q96.61 35.95 95.27 34.59Q93.92 33.22 93.17 31.38Q92.41 29.54 92.41 27.41L92.41 27.41Q92.41 25.27 93.17 23.42Q93.92 21.56 95.27 20.18Q96.61 18.80 98.35 18.03Q100.08 17.26 102.04 17.26L102.04 17.26Q104.21 17.26 105.77 17.85Q107.32 18.45 108.34 19.29L108.34 19.29L108.23 23.28L107.99 23.28Q107.22 21.98 105.80 21.02Q104.38 20.06 102.04 20.06L102.04 20.06Q100.15 20.06 98.77 21.00Q97.38 21.95 96.61 23.59Q95.84 25.24 95.84 27.41L95.84 27.41Q95.84 29.61 96.84 31.26Q97.84 32.91 99.45 33.80Q101.06 34.69 102.84 34.69L102.84 34.69Q104.80 34.69 106.08 33.99Q107.36 33.29 108.13 32.13L108.13 32.13ZM118.45 37.49L118.45 37.49Q113.52 37.49 113.52 31.19L113.52 31.19L113.52 20.16Q113.52 20.16 113.03 20.22Q112.54 20.27 111.87 20.36Q111.21 20.44 110.61 20.55L110.61 20.55L110.61 20.16L116.49 13.69L116.84 13.69L116.84 17.75L121.78 17.75L122.13 20.55Q121.43 20.41 120.75 20.34Q120.06 20.27 119.15 20.22Q118.24 20.16 116.84 20.16L116.84 20.16L116.84 31.05Q116.84 33.01 117.39 33.78Q117.93 34.55 119.29 34.55L119.29 34.55Q120.17 34.55 120.73 34.20Q121.29 33.85 121.74 33.19L121.74 33.19L122.72 34.52Q122.20 35.81 121.15 36.65Q120.10 37.49 118.45 37.49ZM124.97 9.87L146.18 9.87L147.01 14.00Q146.07 13.51 145.04 13.22Q144.00 12.92 142.68 12.80Q141.34 12.67 139.42 12.67L139.42 12.67L137.32 12.67L137.32 29.23Q137.32 31.19 137.41 33.15Q137.50 35.11 137.95 37L137.95 37L133.19 37Q133.65 35.11 133.73 33.15Q133.82 31.19 133.82 29.23L133.82 29.23L133.82 12.67L131.72 12.67Q129.83 12.67 128.48 12.80Q127.13 12.92 126.10 13.22Q125.07 13.51 124.13 14.00L124.13 14.00L124.97 9.87ZM154.19 37.49L154.19 37.49Q152.23 37.49 150.50 36.72Q148.77 35.95 147.42 34.59Q146.07 33.22 145.32 31.38Q144.57 29.54 144.57 27.41L144.57 27.41Q144.57 25.27 145.32 23.42Q146.07 21.56 147.40 20.18Q148.73 18.80 150.46 18.03Q152.20 17.26 154.16 17.26L154.16 17.26Q156.78 17.26 158.57 18.61Q160.35 19.95 161.28 22.25Q162.21 24.54 162.21 27.41L162.21 27.41L148.00 27.41Q148.00 29.41 148.92 31.07Q149.85 32.73 151.44 33.71Q153.04 34.69 155.00 34.69L155.00 34.69Q156.96 34.69 158.23 33.99Q159.51 33.29 160.28 32.13L160.28 32.13L161.54 33.22Q161.16 33.99 160.30 34.99Q159.44 35.98 157.95 36.74Q156.47 37.49 154.19 37.49ZM148.28 24.78L148.28 24.78L158.57 24.78Q158.18 22.61 157.03 21.34Q155.87 20.06 153.81 20.06L153.81 20.06Q151.57 20.06 150.17 21.34Q148.77 22.61 148.28 24.78ZM178.17 29.23L178.17 26.53Q178.17 25.41 178.06 24.28Q177.96 23.14 177.61 22.20Q177.26 21.25 176.49 20.65Q175.72 20.06 174.39 20.06L174.39 20.06Q172.32 20.06 171.22 21.04Q170.12 22.02 169.68 23.52Q169.24 25.03 169.14 26.67L169.14 26.67L169.14 29.23Q169.14 31.19 169.22 33.15Q169.31 35.11 169.77 37L169.77 37L165.18 37Q165.64 35.11 165.72 33.15Q165.81 31.19 165.81 29.23L165.81 29.23L165.81 25.45Q165.81 23.56 165.67 22.35Q165.53 21.14 165.25 20.30Q164.97 19.46 164.48 18.69L164.48 18.69L164.48 18.48L169.14 17.50L169.14 20.34L169.38 20.34Q169.91 19.46 170.52 18.78Q171.13 18.10 172.15 17.68Q173.16 17.26 174.88 17.26L174.88 17.26Q176.98 17.26 178.29 18.05Q179.60 18.83 180.28 20.16Q180.97 21.49 181.23 23.14Q181.49 24.78 181.49 26.53L181.49 26.53L181.49 29.23Q181.49 31.19 181.58 33.15Q181.67 35.11 182.12 37L182.12 37L177.54 37Q177.99 35.11 178.08 33.15Q178.17 31.19 178.17 29.23L178.17 29.23ZM185.52 17.75L199.48 17.75L199.48 19.25L189.47 34.20L194.58 34.20Q196.61 34.20 197.80 33.97Q198.99 33.74 199.97 33.22L199.97 33.22L199.38 37L185.38 37L185.38 35.32L195.21 20.55L190.31 20.55Q188.28 20.55 187.09 20.78Q185.90 21.00 184.92 21.53L184.92 21.53L185.52 17.75ZM202.77 12.29L205.64 9.42L208.55 12.29L205.64 15.19L202.77 12.29ZM204.34 29.23L204.34 29.23L204.34 25.45Q204.34 23.56 204.21 22.35Q204.06 21.14 203.78 20.30Q203.50 19.46 203.02 18.69L203.02 18.69L203.02 18.48L207.67 17.50L207.67 29.23Q207.67 31.19 207.76 33.15Q207.84 35.11 208.30 37L208.30 37L203.72 37Q204.17 35.11 204.26 33.15Q204.34 31.19 204.34 29.23ZM226.15 17.75L230.60 17.75Q229.72 19.04 228.95 20.58Q228.18 22.13 227.06 24.75L227.06 24.75L222.02 37L218.87 37L213.83 24.75Q212.75 22.13 211.96 20.58Q211.17 19.04 210.30 17.75L210.30 17.75L214.99 17.75Q215.20 19.01 215.69 20.50Q216.18 21.98 217.16 24.47L217.16 24.47L220.48 33.08L223.95 24.47Q224.96 21.98 225.43 20.50Q225.91 19.01 226.15 17.75L226.15 17.75ZM232.52 12.29L235.39 9.42L238.30 12.29L235.39 15.19L232.52 12.29ZM234.09 29.23L234.09 29.23L234.09 25.45Q234.09 23.56 233.96 22.35Q233.81 21.14 233.53 20.30Q233.25 19.46 232.77 18.69L232.77 18.69L232.77 18.48L237.42 17.50L237.42 29.23Q237.42 31.19 237.51 33.15Q237.59 35.11 238.05 37L238.05 37L233.47 37Q233.92 35.11 234.01 33.15Q234.09 31.19 234.09 29.23ZM248.41 37.49L248.41 37.49Q243.47 37.49 243.47 31.19L243.47 31.19L243.47 20.16Q243.47 20.16 242.99 20.22Q242.50 20.27 241.83 20.36Q241.16 20.44 240.57 20.55L240.57 20.55L240.57 20.16L246.45 13.69L246.80 13.69L246.80 17.75L251.74 17.75L252.09 20.55Q251.38 20.41 250.70 20.34Q250.02 20.27 249.11 20.22Q248.20 20.16 246.80 20.16L246.80 20.16L246.80 31.05Q246.80 33.01 247.34 33.78Q247.88 34.55 249.25 34.55L249.25 34.55Q250.13 34.55 250.69 34.20Q251.25 33.85 251.70 33.19L251.70 33.19L252.68 34.52Q252.16 35.81 251.11 36.65Q250.06 37.49 248.41 37.49ZM270.32 24.75L265.28 37Q263.99 40.08 263.25 42.30Q262.51 44.52 262.24 46.06L262.24 46.06L257.48 46.06Q258.52 44.49 259.64 42.25Q260.76 40.01 262.06 36.86L262.06 36.86L257.09 24.75Q256.00 22.13 255.22 20.58Q254.43 19.04 253.56 17.75L253.56 17.75L258.25 17.75Q258.45 19.01 258.94 20.50Q259.44 21.98 260.42 24.47L260.42 24.47L263.74 33.08L267.20 24.47Q268.22 21.98 268.69 20.50Q269.17 19.01 269.41 17.75L269.41 17.75L273.86 17.75Q272.98 19.04 272.21 20.58Q271.44 22.13 270.32 24.75L270.32 24.75Z"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+      <p class="text-lg text-cream/70 font-light">
+        Find your optimal sensitivity using TenZ's proven binary search method
+      </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 container mx-auto p-4 max-w-4xl">
+      <!-- Progress Bar -->
+      <div class="mb-8">
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-cream/60 mt-2">
+          <span>Start</span>
+          <span id="progress-text">Step 1 of 5</span>
+          <span>Perfect Sens</span>
+        </div>
+      </div>
+
+      <!-- Calculator Card -->
+      <div class="glass-card rounded-2xl p-8 mb-8">
+        <!-- Step 1: DPI Input -->
+        <div id="step-1" class="step active">
+          <div class="text-center">
+            <h2 class="text-2xl font-medium text-cream mb-2">
+              Enter Your Mouse DPI
+            </h2>
+            <p class="text-cream/60 mb-8 font-light">
+              This will calculate your base sensitivity using pro player
+              averages (eDPI ~280)
+            </p>
+
+            <div class="max-w-sm mx-auto">
+              <label
+                for="dpi"
+                class="block mb-3 text-sm font-medium text-cream/80"
+                >Mouse DPI</label
+              >
+              <input
+                type="number"
+                id="dpi"
+                class="input-field w-full p-4 text-xl text-center rounded-xl font-medium"
+                value="800"
+                min="100"
+                max="3200"
+                step="50"
+              />
+              <p class="text-xs mt-2 text-cream/50">
+                Common values: 400, 800, 1600
+              </p>
+
+              <!-- Previous DPI History -->
+              <div id="dpi-history" class="mt-4 hidden">
+                <p class="text-xs text-cream/60 mb-2">Previously used:</p>
+                <div
+                  id="dpi-buttons"
+                  class="flex gap-2 justify-center flex-wrap"
+                ></div>
+              </div>
+
+              <button
+                id="calculate-btn"
+                class="btn-primary mt-8 w-full px-8 py-4 rounded-xl font-medium text-white"
+              >
+                Calculate Base Sensitivity
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Initial Test -->
+        <div id="step-2" class="step">
+          <div class="text-center">
+            <h2 class="text-2xl font-medium text-cream mb-2">
+              Test Your Base Sensitivity
+            </h2>
+            <p class="text-cream/60 mb-6 font-light">
+              Try this sensitivity in-game and see how it feels
+            </p>
+
+            <div
+              class="sensitivity-display rounded-xl p-6 mb-8 max-w-md mx-auto"
+            >
+              <div
+                class="text-4xl font-bold text-valorantRed mb-2"
+                id="current-sens"
+              >
+                0.35
+              </div>
+              <div class="text-sm text-cream/60">
+                DPI: <span id="display-dpi">800</span> × Sens:
+                <span id="display-sens">0.35</span> =
+                <span class="text-valorantRed font-medium" id="display-edpi"
+                  >280 eDPI</span
+                >
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-cream/80 text-sm mb-6">
+                Go to the range, try some flicks and tracking. How does it feel?
+              </p>
+              <div class="flex gap-4 justify-center">
+                <button
+                  id="too-slow"
+                  class="btn-secondary px-6 py-3 rounded-xl font-medium text-cream"
+                >
+                  Too Slow
+                </button>
+                <button
+                  id="perfect"
+                  class="btn-primary px-6 py-3 rounded-xl font-medium text-white"
+                >
+                  Perfect!
+                </button>
+                <button
+                  id="too-fast"
+                  class="btn-secondary px-6 py-3 rounded-xl font-medium text-cream"
+                >
+                  Too Fast
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Binary Search -->
+        <div id="step-3" class="step">
+          <div class="text-center">
+            <h2 class="text-2xl font-medium text-cream mb-2">
+              Binary Search Optimization
+            </h2>
+            <p class="text-cream/60 mb-6 font-light">
+              We're narrowing down your perfect sensitivity
+            </p>
+
+            <!-- Binary Search Visualization -->
+            <div class="binary-search-visual">
+              <div class="search-range"></div>
+              <div id="search-bounds" class="search-bounds"></div>
+              <div id="search-pointer" class="search-pointer"></div>
+              <div class="search-labels">
+                <span id="low-label">0.1</span>
+                <span id="high-label">1.0</span>
+              </div>
+              <div class="search-current">
+                Current: <span id="search-current-value">0.35</span>
+              </div>
+            </div>
+
+            <div
+              class="sensitivity-display rounded-xl p-6 mb-8 max-w-md mx-auto"
+            >
+              <div
+                class="text-4xl font-bold text-valorantRed mb-2"
+                id="binary-sens"
+              >
+                0.35
+              </div>
+              <div class="text-sm text-cream/60">
+                Iteration <span id="iteration-count">1</span> of
+                <span id="max-iterations">7</span>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-cream/80 text-sm mb-6">
+                Test this sensitivity. How does it feel compared to before?
+              </p>
+              <div class="flex gap-4 justify-center">
+                <button
+                  id="binary-too-slow"
+                  class="btn-secondary px-6 py-3 rounded-xl font-medium text-cream"
+                >
+                  Still Too Slow
+                </button>
+                <button
+                  id="binary-perfect"
+                  class="btn-primary px-6 py-3 rounded-xl font-medium text-white"
+                >
+                  Perfect!
+                </button>
+                <button
+                  id="binary-too-fast"
+                  class="btn-secondary px-6 py-3 rounded-xl font-medium text-cream"
+                >
+                  Still Too Fast
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Final Result -->
+        <div id="step-4" class="step">
+          <div class="text-center">
+            <h2 class="text-2xl font-medium text-cream mb-2">
+              🎯 Perfect Sensitivity Found!
+            </h2>
+            <p class="text-cream/60 mb-8 font-light">
+              Your optimized sensitivity based on TenZ's binary search method
+            </p>
+
+            <div
+              class="sensitivity-display rounded-xl p-8 mb-8 max-w-lg mx-auto"
+            >
+              <div
+                class="text-5xl font-bold text-valorantRed mb-4"
+                id="final-sens"
+              >
+                0.35
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="text-cream/60">
+                  <div>DPI</div>
+                  <div class="text-lg font-medium text-cream" id="final-dpi">
+                    800
+                  </div>
+                </div>
+                <div class="text-cream/60">
+                  <div>eDPI</div>
+                  <div
+                    class="text-lg font-medium text-valorantRed"
+                    id="final-edpi"
+                  >
+                    280
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+              <div class="glass-card rounded-xl p-4">
+                <h3 class="font-medium text-cream mb-2">360° Distance</h3>
+                <p class="text-2xl text-valorantRed" id="cm-360">36.4cm</p>
+              </div>
+              <div class="glass-card rounded-xl p-4">
+                <h3 class="font-medium text-cream mb-2">Iterations Used</h3>
+                <p class="text-2xl text-valorantRed" id="total-iterations">3</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <button
+                id="copy-sens"
+                class="btn-primary px-8 py-3 rounded-xl font-medium text-white mr-4"
+              >
+                📋 Copy Sensitivity
+              </button>
+              <button
+                id="start-over"
+                class="btn-secondary px-8 py-3 rounded-xl font-medium text-cream"
+              >
+                🔄 Start Over
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips Card -->
+      <div class="glass-card rounded-2xl p-6 text-center">
+        <h3 class="text-lg font-medium text-cream mb-4">💡 Pro Tips</h3>
+        <div class="grid md:grid-cols-3 gap-4 text-sm text-cream/80">
+          <div>
+            <div class="text-valorantRed font-medium mb-1">Consistency</div>
+            <div>Stick with your sens for at least a week before changing</div>
+          </div>
+          <div>
+            <div class="text-valorantRed font-medium mb-1">Practice</div>
+            <div>Use aim trainers like Kovaak's or Aim Lab daily</div>
+          </div>
+          <div>
+            <div class="text-valorantRed font-medium mb-1">Fine-tuning</div>
+            <div>Small adjustments (±0.02) if needed after extended play</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // App State
+      let currentStep = 1;
+      let currentDPI = 800;
+      let currentSens = 0.35;
+      let lowBound = 0.1;
+      let highBound = 1.0;
+      let iteration = 0;
+      let maxIterations = 7;
+
+      // Initialize app
+      document.addEventListener("DOMContentLoaded", function () {
+        loadDPIHistory();
+        initializeEventListeners();
+        updateProgress();
+      });
+
+      function initializeEventListeners() {
+        // Step 1 - DPI Input
+        document
+          .getElementById("calculate-btn")
+          .addEventListener("click", calculateBaseSensitivity);
+        document.getElementById("dpi").addEventListener("input", function () {
+          currentDPI = parseInt(this.value) || 800;
+        });
+
+        // Step 2 - Initial Test
+        document
+          .getElementById("too-slow")
+          .addEventListener("click", () => initialFeedback("slow"));
+        document
+          .getElementById("perfect")
+          .addEventListener("click", () => initialFeedback("perfect"));
+        document
+          .getElementById("too-fast")
+          .addEventListener("click", () => initialFeedback("fast"));
+
+        // Step 3 - Binary Search
+        document
+          .getElementById("binary-too-slow")
+          .addEventListener("click", () => binaryFeedback("slow"));
+        document
+          .getElementById("binary-perfect")
+          .addEventListener("click", () => binaryFeedback("perfect"));
+        document
+          .getElementById("binary-too-fast")
+          .addEventListener("click", () => binaryFeedback("fast"));
+
+        // Step 4 - Final
+        document
+          .getElementById("copy-sens")
+          .addEventListener("click", copySensitivity);
+        document
+          .getElementById("start-over")
+          .addEventListener("click", startOver);
+      }
+
+      function calculateBaseSensitivity() {
+        currentDPI = parseInt(document.getElementById("dpi").value) || 800;
+
+        // Calculate base sensitivity (target eDPI of 280)
+        currentSens = Math.round((280 / currentDPI) * 1000) / 1000;
+
+        // Save DPI to history
+        saveDPIToHistory(currentDPI);
+
+        // Update display
+        updateSensitivityDisplay();
+
+        // Animate to next step
+        goToStep(2);
+        updateProgress();
+      }
+
+      function initialFeedback(feedback) {
+        if (feedback === "perfect") {
+          goToStep(4);
+          showFinalResult();
+          return;
+        } else {
+          // Setup binary search bounds
+          if (feedback === "slow") {
+            lowBound = currentSens;
+            highBound = Math.min(currentSens * 2, 1.0);
+          } else {
+            highBound = currentSens;
+            lowBound = Math.max(currentSens * 0.5, 0.1);
+          }
+
+          iteration = 1;
+          goToStep(3);
+          updateBinarySearch();
+        }
+        updateProgress();
+      }
+
+      function binaryFeedback(feedback) {
+        if (feedback === "perfect") {
+          goToStep(4);
+          showFinalResult();
+        } else {
+          if (feedback === "slow") {
+            lowBound = currentSens;
+          } else {
+            highBound = currentSens;
+          }
+
+          iteration++;
+
+          if (iteration >= maxIterations) {
+            goToStep(4);
+            showFinalResult();
+          } else {
+            updateBinarySearch();
+          }
+        }
+        updateProgress();
+      }
+
+      function updateBinarySearch() {
+        // Calculate new sensitivity (middle of bounds)
+        currentSens = Math.round(((lowBound + highBound) / 2) * 1000) / 1000;
+
+        // Update displays
+        document.getElementById("binary-sens").textContent = currentSens;
+        document.getElementById("iteration-count").textContent = iteration;
+        document.getElementById("max-iterations").textContent = maxIterations;
+
+        // Update binary search visualization
+        updateBinarySearchVisualization();
+
+        // Animate the sensitivity change
+        animateSensitivityChange();
+      }
+
+      function updateBinarySearchVisualization() {
+        const searchBounds = document.getElementById("search-bounds");
+        const searchPointer = document.getElementById("search-pointer");
+        const lowLabel = document.getElementById("low-label");
+        const highLabel = document.getElementById("high-label");
+        const currentValue = document.getElementById("search-current-value");
+
+        // Calculate percentages for visualization
+        const totalRange = 1.0 - 0.1; // 0.1 to 1.0
+        const boundStart = ((lowBound - 0.1) / totalRange) * 100;
+        const boundWidth = ((highBound - lowBound) / totalRange) * 100;
+        const pointerPos = ((currentSens - 0.1) / totalRange) * 100;
+
+        // Animate bounds
+        gsap.to(searchBounds, {
+          left: boundStart + "%",
+          width: boundWidth + "%",
+          duration: 0.8,
+          ease: "power2.out",
+        });
+
+        // Animate pointer
+        gsap.to(searchPointer, {
+          left: pointerPos + "%",
+          duration: 0.8,
+          ease: "power2.out",
+        });
+
+        // Update labels
+        lowLabel.textContent = lowBound.toFixed(2);
+        highLabel.textContent = highBound.toFixed(2);
+        currentValue.textContent = currentSens.toFixed(3);
+      }
+
+      function animateSensitivityChange() {
+        const sensElement = document.getElementById("binary-sens");
+
+        // Pulse animation
+        gsap.fromTo(
+          sensElement,
+          { scale: 1 },
+          {
+            scale: 1.1,
+            duration: 0.2,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.inOut",
+          }
+        );
+      }
+
+      function showFinalResult() {
+        const cm360 =
+          Math.round(((2.54 * 360) / (currentDPI * currentSens)) * 10) / 10;
+        const finalEDPI = Math.round(currentDPI * currentSens);
+
+        document.getElementById("final-sens").textContent = currentSens;
+        document.getElementById("final-dpi").textContent = currentDPI;
+        document.getElementById("final-edpi").textContent = finalEDPI;
+        document.getElementById("cm-360").textContent = cm360 + "cm";
+        document.getElementById("total-iterations").textContent = iteration;
+
+        // Celebration animation
+        celebrateResult();
+      }
+
+      function celebrateResult() {
+        const finalSens = document.getElementById("final-sens");
+
+        gsap.fromTo(
+          finalSens,
+          { scale: 0, rotation: -180 },
+          {
+            scale: 1,
+            rotation: 0,
+            duration: 0.8,
+            ease: "back.out(1.7)",
+          }
+        );
+      }
+
+      function updateSensitivityDisplay() {
+        document.getElementById("current-sens").textContent = currentSens;
+        document.getElementById("display-dpi").textContent = currentDPI;
+        document.getElementById("display-sens").textContent = currentSens;
+        document.getElementById("display-edpi").textContent = Math.round(
+          currentDPI * currentSens
+        );
+      }
+
+      function goToStep(step) {
+        currentStep = step;
+        document
+          .querySelectorAll(".step")
+          .forEach((el) => el.classList.remove("active"));
+        const el = document.getElementById(`step-${step}`);
+        el.classList.add("active");
+
+        // Progress bar
+        const pct = (currentStep / 4) * 100;
+        gsap.to("#progress-bar", {
+          width: pct + "%",
+          duration: 0.5,
+          ease: "power2.out",
+        });
+        document.getElementById(
+          "progress-text"
+        ).textContent = `Step ${step} of 4`;
+
+        // Animate step
+        gsap.from(el, { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" });
+      }
+
+      function updateProgress() {
+        const progressBar = document.getElementById("progress-bar");
+        const progressText = document.getElementById("progress-text");
+
+        const progressPercent = (currentStep / 4) * 100;
+
+        gsap.to(progressBar, {
+          width: progressPercent + "%",
+          duration: 0.6,
+          ease: "power2.out",
+        });
+
+        progressText.textContent = `Step ${currentStep} of 4`;
+      }
+
+      function copySensitivity() {
+        const textToCopy = `DPI: ${currentDPI}, Sensitivity: ${currentSens}, eDPI: ${Math.round(
+          currentDPI * currentSens
+        )}`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const button = document.getElementById("copy-sens");
+          const originalText = button.textContent;
+          button.textContent = "✅ Copied!";
+          button.classList.add("pulse");
+
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove("pulse");
+          }, 2000);
+        });
+      }
+
+      function startOver() {
+        currentStep = 1;
+        currentSens = 0.35;
+        lowBound = 0.1;
+        highBound = 1.0;
+        iteration = 0;
+
+        goToStep(1);
+        updateProgress();
+
+        // Reset DPI input
+        document.getElementById("dpi").value = currentDPI;
+      }
+
+      // DPI History Management (using variables instead of localStorage)
+      let dpiHistory = [];
+
+      function saveDPIToHistory(dpi) {
+        if (!dpiHistory.includes(dpi)) {
+          dpiHistory.unshift(dpi);
+          dpiHistory = dpiHistory.slice(0, 5); // Keep only 5 most recent
+          updateDPIHistory();
+        }
+      }
+
+      function loadDPIHistory() {
+        // Initialize with common values
+        dpiHistory = [800, 400, 1600];
+        updateDPIHistory();
+      }
+
+      function updateDPIHistory() {
+        const historyDiv = document.getElementById("dpi-history");
+        const buttonsDiv = document.getElementById("dpi-buttons");
+
+        if (dpiHistory.length > 0) {
+          historyDiv.classList.remove("hidden");
+          buttonsDiv.innerHTML = "";
+
+          dpiHistory.forEach((dpi) => {
+            const button = document.createElement("button");
+            button.className =
+              "text-xs px-3 py-1 bg-valorantRed/20 text-valorantRed rounded-full hover:bg-valorantRed/30 transition";
+            button.textContent = dpi;
+            button.onclick = () => {
+              document.getElementById("dpi").value = dpi;
+              currentDPI = dpi;
+            };
+            buttonsDiv.appendChild(button);
+          });
+        }
+      }
+
+      // Initial animations
+      gsap.from("header", {
+        y: -50,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out",
+      });
+
+      gsap.from(".glass-card", {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        delay: 0.3,
+        stagger: 0.2,
+        ease: "power2.out",
+      });
+
+      // Video fallback handler
+      const video = document.querySelector("video");
+      if (video) {
+        video.addEventListener("error", function () {
+          console.log("Local video failed, using fallback");
+        });
+      }
+    </script>
+  </body>
+</html>
